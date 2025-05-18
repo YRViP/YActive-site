@@ -6,6 +6,14 @@ import os
 import json
 import bcrypt
 import uuid
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_sock import Sock
+from datetime import datetime, timedelta
+import os
+import json
+import bcrypt
+import uuid
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'
@@ -121,6 +129,21 @@ def admin():
     gyms = Gym.query.all()
     codes = ActivationCode.query.all()
     return render_template('admin.html', gyms=gyms, codes=codes)
+
+
+@app.route('/delete_gym', methods=['POST'])
+def delete_gym():
+    gym_id = request.form['gym_id']
+    gym = Gym.query.get(gym_id)
+    if gym:
+        db.session.delete(gym)
+        db.session.commit()
+        flash('Gym deleted successfully!')
+    else:
+        flash('Gym not found!')
+    return redirect(url_for('admin'))
+
+
 
 @sock.route('/ws')
 def websocket(ws):
