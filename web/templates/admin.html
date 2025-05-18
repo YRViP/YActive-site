@@ -43,12 +43,38 @@
 <h3>Add New Gym</h3>
 <form method="post">
     <input type="hidden" name="add_gym" value="1">
+    <label>Gym ID:</label>
+    <input type="text" name="gym_id" required>
     <label>Gym Name:</label>
     <input type="text" name="gym_name" required>
     <label>Password:</label>
     <input type="password" name="gym_password" required>
     <button type="submit">Add Gym</button>
 </form>
+<h3>Manage Gyms</h3>
+<table>
+    <tr>
+        <th>Gym ID</th>
+        <th>Gym Name</th>
+        <th>Actions</th>
+    </tr>
+    {% for gym in gyms %}
+    <tr>
+        <td>{{ gym.id }}</td>
+        <td>{{ gym.name }}</td>
+        <td>
+            <form method="post" action="{{ url_for('delete_gym') }}">
+                <input type="hidden" name="gym_id" value="{{ gym.id }}">
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+    </tr>
+    {% else %}
+    <tr>
+        <td colspan="3">No gyms found.</td>
+    </tr>
+    {% endfor %}
+</table>
 <h3>Activation Codes</h3>
 <table>
     <tr>
@@ -77,6 +103,10 @@
             </form>
             {% endif %}
         </td>
+    </tr>
+    {% else %}
+    <tr>
+        <td colspan="7">No activation codes found.</td>
     </tr>
     {% endfor %}
 </table>
