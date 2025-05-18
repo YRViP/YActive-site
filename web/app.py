@@ -17,9 +17,11 @@ sock = Sock(app)
 
 # نموذج قاعدة البيانات
 class Gym(db.Model):
-    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = db.Column(db.String(36), primary_key=True)  # إزالة default عشان تحدد الـ ID يدويًا
     name = db.Column(db.String(100), nullable=False)
     password = db.Column(db.String(100), nullable=False)
+
+
 
 class ActivationCode(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -91,19 +93,23 @@ def purchase():
 def admin():
     if request.method == 'POST':
         if 'add_gym' in request.form:
+            gym_id = request.form['gym_id']
             name = request.form['gym_name']
             password = bcrypt.hashpw(request.form['gym_password'].encode(), bcrypt.gensalt()).decode()
-            gym = Gym(name=name, password=password)
-            db.session.add(gym)
-            db.session.commit()
-            flash('Gym added successfully!')
+            # التأكد إن الـ ID مش موجود قبل كده
+            if Gym.query.get(gym_id):
+                flash('Gym ID already exists!')
+            else:
+                gym = Gym(id=gym_id, name=name, password=password)
+                db.session.add(gym)
+                db.session.commit()
+                flash(f'Gym added successfully! Gym ID: {gym_id}')
         elif 'confirm_payment' in request.form:
             code_id = request.form['code_id']
             code = ActivationCode.query.get(code_id)
             code.payment_confirmed = True
             code.is_active = True
             db.session.commit()
-            # إرسال الكود عبر WebSocket
             if code.gym_id in connected_clients:
                 connected_clients[code.gym_id].send(json.dumps({
                     'gym_id': code.gym_id,
